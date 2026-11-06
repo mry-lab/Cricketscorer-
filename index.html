@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="app-version" content="1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cricket Scorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef1e6;--card:#fbfcf7;--ink:#1c2b1d;--mute:#6a7a67;--green:#1f5a30;--on:#fff;--red:#b3261e;--line:#d3dac8;--amber:#c98a12;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1710;--card:#16231a;--ink:#eaf0e2;--mute:#8fa28b;--green:#4fa76a;--on:#08140b;--red:#ff6b5e;--line:#2a3b2d;--amber:#e3a835}}
+:root[data-theme="dark"]{--bg:#0e1710;--card:#16231a;--ink:#eaf0e2;--mute:#8fa28b;--green:#4fa76a;--on:#08140b;--red:#ff6b5e;--line:#2a3b2d;--amber:#e3a835}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 Barlow,system-ui,sans-serif}
+main{max-width:480px;margin:0 auto;padding:14px}
+h1,.num{font-family:"Barlow Condensed","Arial Narrow",sans-serif;margin:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.team{font-weight:600;color:var(--mute)}
+.score{font-size:72px;line-height:.95;font-weight:700;letter-spacing:-1px}
+.score small{font-size:32px;color:var(--mute);font-weight:600}
+.meta{display:flex;gap:16px;color:var(--mute);margin-top:6px;flex-wrap:wrap}
+.meta b{color:var(--ink)}
+.msg{margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--bg);font-weight:600}
+.over{display:flex;gap:6px;flex-wrap:wrap;min-height:38px;align-items:center}
+.ball{min-width:36px;height:36px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--line);font:700 15px "Barlow Condensed",sans-serif;padding:0 4px}
+.ball.f{border-color:var(--green);color:var(--green)}
+.ball.x{border-color:var(--amber);color:var(--amber)}
+.ball.w{background:var(--red);border-color:var(--red);color:#fff}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+button{font-family:inherit}
+.pad button,.mods button,.row button{font:700 28px "Barlow Condensed",sans-serif;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;height:62px;cursor:pointer}
+.pad button:active{transform:scale(.96)}
+.pad .b4,.pad .b6{background:var(--green);color:var(--on);border-color:var(--green)}
+.mods{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px}
+.mods button{font-size:20px;height:46px}
+.mods button.on{background:var(--amber);color:#111;border-color:var(--amber)}
+.mods button.wk.on{background:var(--red);color:#fff;border-color:var(--red)}
+.row{display:flex;gap:8px;margin-top:10px}
+.row button{flex:1;font-size:18px;height:44px}
+.go{background:var(--green)!important;color:var(--on)!important;border-color:var(--green)!important;width:100%;height:52px!important;font-size:22px!important}
+label{display:block;font-weight:600;margin:10px 0 4px}
+input,select,textarea{width:100%;font:inherit;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+textarea{min-height:90px}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.hint{color:var(--mute);font-size:14px;margin:6px 0 0}
+table{width:100%;border-collapse:collapse}td{padding:4px 0}td.r{text-align:right;white-space:nowrap}
+.pl td{border-bottom:1px solid var(--line)}.pl tr:last-child td{border:0}
+.str{font-weight:700}.pl span{cursor:pointer;text-decoration:underline dotted}.out{color:var(--mute)}
+.dev{text-align:center;color:var(--mute);font-size:14px;padding:6px 14px 22px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 8px}
+.logo{font:700 26px "Barlow Condensed",sans-serif;letter-spacing:.3px}
+.me{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:14px;color:var(--mute);font-weight:600}
+.tabs{display:flex;gap:8px;overflow-x:auto;position:sticky;top:0;z-index:20;background:var(--bg);padding:6px 14px 12px;margin:0 -14px 6px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:0 0 auto;display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 15px;border-radius:999px;font:600 15px Barlow,system-ui,sans-serif;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.06);transition:.15s}
+.tabs button i{font-style:normal;font-size:16px}
+.tabs button.on{background:var(--green);color:var(--on);border-color:var(--green);box-shadow:0 4px 12px rgba(31,90,48,.35)}
+.card{box-shadow:0 1px 3px rgba(0,0,0,.06),0 6px 18px rgba(0,0,0,.04);border-radius:16px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rw{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.chips span{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600}
+.bdg{font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--bg);border:1px solid var(--line);color:var(--mute);white-space:nowrap}.bdg.liv{background:var(--red);border-color:var(--red);color:#fff}
+.hero{background:linear-gradient(135deg,var(--card),var(--bg))}
+.stage{text-align:center;border:2px solid var(--green)}.pname{font:700 36px "Barlow Condensed",sans-serif}.bidv{font:700 56px "Barlow Condensed",sans-serif;color:var(--green);margin:4px 0}
+.bids{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.bids button{border:1px solid var(--green);background:var(--card);color:var(--ink);border-radius:12px;padding:10px 6px;font:700 16px Barlow,sans-serif;cursor:pointer}.bids button small{display:block;font-weight:600;color:var(--green)}.bids button:disabled{opacity:.45}
+.sc{overflow-x:auto;margin-top:8px}.tb th{text-align:left;font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.5px;padding:6px 8px;border-bottom:2px solid var(--line)}.tb td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}.tb tr.cur td{background:rgba(201,138,18,.15)}
+summary{font-weight:600;cursor:pointer}
+.cm{padding:6px 0;border-bottom:1px solid rgba(128,128,128,.25);font-size:14px}.cm b{margin-right:6px}details.ov{margin:6px 0;border:1px solid rgba(128,128,128,.35);border-radius:10px;padding:8px 10px}details.ov summary{cursor:pointer;font-weight:600}details.ov summary span{display:block;margin-top:6px}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<footer class="dev">Developed by Vidhan Shah<div style="font-size:12px;opacity:.7">Version 1</div></footer>
+<script>
+var KEY="cricket-scorer-v2";
+var S=load()||{setup:true,a:"",b:"",ov:5,raw:["",""],sq:[[],[]],inn:0,log:[[],[]],cur:[{},{}]};
+var mod={x:null,w:false};
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+function save(){if(LIVE)return;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}livePush()}
+function maxW(i){return Math.max(1,Math.min(10,S.sq[i].length-1))}
+function calc(i){var r=0,w=0,b=0;S.log[i].forEach(function(e){r+=e.t;if(e.w)w++;if(e.l)b++});return{r:r,w:w,b:b}}
+function ended(i){var c=calc(i);if(c.b>=S.ov*6||c.w>=maxW(i))return true;return i===1&&c.r>calc(0).r}
+function team(i){return i===0?S.a:S.b}
+function ovr(n){return Math.floor(n/6)+"."+n%6}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function stats(i){
+ var B={},W={};
+ S.log[i].forEach(function(e){
+  var b=B[e.b]||(B[e.b]={r:0,b:0,f4:0,f6:0,o:false});
+  if(e.k){b.ret=true;return}b.ret=false;b.r+=e.br;if(e.x!=="wd")b.b++;if(e.br===4)b.f4++;if(e.br===6)b.f6++;if(e.w){var oo=e.out||e.b,ob=B[oo]||(B[oo]={r:0,b:0,f4:0,f6:0,o:false});ob.o=true;ob.how=(e.dt||"Out")+((e.dt==="Run out"||!e.dt)?"":" b "+e.bw)}
+  var w=W[e.bw]||(W[e.bw]={b:0,r:0,w:0});
+  if(e.l)w.b++;w.r+=(e.x==="bye"||e.x==="lb")?0:e.t;if(e.w&&e.dt!=="Run out")w.w++;
+ });
+ return{B:B,W:W};
+}
+function chipOf(e){
+ var lab={wd:"Wd",nb:"Nb",bye:"B",lb:"LB"}[e.x]||"";
+ var runs=(e.x==="wd"||e.x==="nb")?e.t-1:e.t,s;
+ if(e.w)s="W"+(runs?"+"+runs:"");
+ else if(e.x==="bye"||e.x==="lb")s=lab+runs;
+ else if(lab)s=lab+(runs?"+"+runs:"");
+ else s=runs===0?"•":String(runs);
+ return '<span class="ball '+(e.w?"w":lab?"x":(e.t>=4?"f":""))+'">'+s+'</span>';
+}
+function curOver(i){
+ var cur=[],last=[],n=0;
+ S.log[i].forEach(function(e){if(e.k)return;cur.push(e);if(e.l){n++;if(n%6===0){last=cur;cur=[]}}});
+ return cur.length?cur:last;
+}
+function parse(t,p){
+ var a=t.split(/[\n,]+/).map(function(s){return s.trim()}).filter(Boolean);
+ if(a.length<2){a=[];for(var i=1;i<=11;i++)a.push(p+" "+i)}
+ return a.filter(function(n,i){return a.indexOf(n)===i});
+}
+function g(id){var e=document.getElementById(id);return e?e.value.trim():""}
+function startReal(){
+ S.a=g("a")||"Team A";S.b=g("b")||"Team B";S.ov=Math.max(1,Math.min(50,parseInt(g("ov"))||5));
+ S.raw=[document.getElementById("sa").value,document.getElementById("sb").value];
+ S.sq=[parse(S.raw[0],"Player"),parse(S.raw[1],"Player")];
+ if(S.sq[1][0]==="Player 1"&&S.sq[0][0]==="Player 1"){S.sq[0]=S.sq[0].map(function(n){return S.a+" "+n.split(" ")[1]});S.sq[1]=S.sq[1].map(function(n){return S.b+" "+n.split(" ")[1]})}
+ if((g("ts")==="b")!==(g("te")==="bowl")){var t0=S.a;S.a=S.b;S.b=t0;S.sq.reverse();S.raw.reverse()}var T=loadT();T[S.a]=S.sq[0];T[S.b]=S.sq[1];saveT(T);S.setup=false;S.arch=0;S.inn=0;S.log=[[],[]];S.cur=[{},{}];save();render();
+}
+function outList(i){return S.log[i].filter(function(e){return e.w}).map(function(e){return e.out||e.b})}
+function prevBowler(i){
+ var l=S.log[i],n=calc(i).b;
+ return(n>0&&n%6===0&&l.length)?l[l.length-1].bw:null;
+}
+function confirmPick(){
+ var i=S.inn,c=S.cur[i],st=g("p_st")||c.st,ns=g("p_ns")||c.ns,bw=g("p_bw")||c.bw;
+ if(st&&ns&&st===ns){alert("Striker and non-striker must be different players.");return}
+ c.st=st||null;c.ns=ns||null;c.bw=bw||null;save();render();
+}
+function add(n){
+ var i=S.inn,c=S.cur[i];if(ended(i)||!c.st||!c.ns||!c.bw)return;
+ var x=mod.x,e={t:n,l:true,w:mod.w,x:x,b:c.st,bw:c.bw,br:(x===null||x==="nb")?n:0,s:{st:c.st,ns:c.ns,bw:c.bw}};
+ if(x==="wd"||x==="nb"){e.t=n+1;e.l=false}
+ if(e.w){e.dt=g("dt")||"Bowled";e.out=g("dw")==="ns"?c.ns:c.st}
+ S.log[i].push(e);
+ if(e.w){if(e.out===c.st)c.st=null;else c.ns=null}
+ if(n%2===1){var t=c.st;c.st=c.ns;c.ns=t}
+ if(e.l&&calc(i).b%6===0){var t2=c.st;c.st=c.ns;c.ns=t2;c.bw=null}
+ mod={x:null,w:false};save();render();
+}
+function setMod(k){if(k==="w")mod.w=!mod.w;else mod.x=mod.x===k?null:k;render()}
+function undo(){
+ var i=S.inn,l=S.log[i];
+ if(l.length){var e=l.pop();S.cur[i]=e.s;}
+ else if(i===1){S.inn=0}
+ mod={x:null,w:false};save();render();
+}
+function swapEnds(){var c=S.cur[S.inn],t=c.st;c.st=c.ns;c.ns=t;save();render()}
+function retire(){var i=S.inn,c=S.cur[i];if(!c.st||ended(i))return;S.log[i].push({k:"ret",t:0,l:false,w:false,x:null,b:c.st,bw:c.bw,br:0,s:{st:c.st,ns:c.ns,bw:c.bw}});c.st=null;save();render()}
+function rename(n){var v=prompt("Rename player",n);v=v&&v.trim();if(!v||v===n)return;if(S.sq[0].concat(S.sq[1]).indexOf(v)>=0){alert("That name is already used.");return}var f=function(x){return x===n?v:x};S.sq=S.sq.map(function(a){return a.map(f)});S.log.forEach(function(l){l.forEach(function(e){e.b=f(e.b);e.bw=f(e.bw);if(e.out)e.out=f(e.out);e.s.st=f(e.s.st);e.s.ns=f(e.s.ns);e.s.bw=f(e.s.bw)})});S.cur=S.cur.map(function(c){return{st:f(c.st),ns:f(c.ns),bw:f(c.bw)}});save();render()}
+function partner(i){var r=0,b=0;S.log[i].forEach(function(e){if(e.w){r=0;b=0}else if(!e.k){r+=e.t;if(e.l)b++}});return r+" ("+b+")"}
+function fow(i){var r=0,b=0,w=0,o=[];S.log[i].forEach(function(e){r+=e.t;if(e.l)b++;if(e.w){w++;o.push(w+"-"+r+" ("+(e.out||e.b)+", "+ovr(b)+")")}});return o.join(", ")}
+function share(){var t=S.a+" vs "+S.b+" ("+S.ov+" overs)\n";[0,1].forEach(function(i){if(!S.log[i].length)return;var c=calc(i),st=stats(i);t+="\n"+team(i)+": "+c.r+"/"+c.w+" ("+ovr(c.b)+" ov)\n";S.sq[i].forEach(function(n){var b=st.B[n];if(b&&(b.b||b.o))t+="  "+n+" "+b.r+" ("+b.b+") "+(b.o?(b.how||"out"):"not out")+"\n"});Object.keys(st.W).forEach(function(n){var w=st.W[n];t+="  "+n+" "+ovr(w.b)+"-"+w.r+"-"+w.w+"\n"})});if(ended(1))t+="\n"+result();if(navigator.share){navigator.share({text:t}).catch(function(){})}else if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){alert("Scorecard copied")},function(){prompt("Copy scorecard",t)})}else prompt("Copy scorecard",t)}
+var V="match",LIVE=null;
+function loadA(){try{return JSON.parse(localStorage.getItem("cricket-arch-v1"))||[]}catch(e){return[]}}
+function saveA(a){try{localStorage.setItem("cricket-arch-v1",JSON.stringify(a))}catch(e){}}
+function loadT(){try{return JSON.parse(localStorage.getItem("cricket-teams-v1"))||{}}catch(e){return{}}}
+function saveT(t){try{localStorage.setItem("cricket-teams-v1",JSON.stringify(t))}catch(e){}}
+function addArchive(p){var r=p?"Incomplete":result(),m=JSON.parse(JSON.stringify(S));m.res=r;var A=loadA();A.unshift({id:Date.now(),date:new Date().toLocaleDateString(),res:r,m:m});saveA(A)}
+function fillTeam(el,id){var T=loadT(),n=el.value.trim();if(T[n])document.getElementById(id).value=T[n].join("\n")}
+function go(v){if(LVU){LVU();LVU=null}if(v==="lo"){auLogout();return}if(LIVE){S=LIVE;LIVE=null}V=v;render()}
+
+function overData(i){var O=[],cur=null,n=0;S.log[i].forEach(function(e){if(e.k)return;if(!cur){cur={no:O.length+1,balls:[],r:0,w:0,bw:e.bw,lb:0};O.push(cur)}
+ if(e.l)cur.lb++;cur.balls.push({e:e,lab:(cur.no-1)+"."+(e.l?cur.lb:cur.lb+1)});cur.r+=e.t;if(e.w)cur.w++;if(e.l){n++;if(n%6===0)cur=null}});return O}
+function desc(e){var r=(e.x==="wd"||e.x==="nb")?e.t-1:e.t,p=r?" + "+r:"";
+ if(e.w)return"OUT! "+esc(e.dt||"Bowled")+" ("+esc(e.out||e.b)+")"+p;
+ if(e.x==="wd")return"Wide"+p;if(e.x==="nb")return"No ball"+p;
+ if(e.x==="bye")return"Bye, "+r+(r===1?" run":" runs");if(e.x==="lb")return"Leg bye, "+r+(r===1?" run":" runs");
+ return r===0?"no run (dot ball)":r===4?"FOUR!":r===6?"SIX!":r+(r===1?" run":" runs")}
+function line(b){var e=b.e;return '<div class="cm"><b>'+b.lab+'</b>'+chipOf(e)+' '+esc(e.bw)+' to '+esc(e.b)+', '+desc(e)+'</div>'}
+function overHtml(i){var O=overData(i);if(!O.length)return"";return '<p class="hint">Tap an over to see each ball</p>'+O.map(function(o){return '<details class="ov"><summary>Over '+o.no+' · '+esc(o.bw)+' · '+o.r+' runs'+(o.w?' · '+o.w+'W':'')+'<span>'+o.balls.map(function(b){return chipOf(b.e)}).join("")+'</span></summary>'+o.balls.map(line).join("")+'</details>'}).join("")}
+function commPg(){var h="";[1,0].forEach(function(i){var O=overData(i);if(!O.length)return;h+='<div class="card"><b>'+esc(team(i))+' – Commentary</b>'+O.slice().reverse().map(function(o){return '<div class="hint" style="margin:10px 0 2px"><b>Over '+o.no+'</b> · '+esc(o.bw)+' · '+o.r+' runs'+(o.w?' · '+o.w+' wkt':'')+'</div>'+o.balls.slice().reverse().map(line).join("")}).join("")+'</div>'});return h||'<div class="card"><p class="hint">No balls yet. Start scoring and the commentary appears here.</p></div>'}
+
+/* ===== Login + passcode system (same online database and rules as the Cricket Auction app) ===== */
+var AFB="https://cricketscorer-8ffab-default-rtdb.asia-southeast1.firebasedatabase.app",AOS="a7f3",AOH="7b3f88bf6dcc63aeb65d114e1292215f2112b4e8a480ef70e55559ef6938cbe2",AME=null,AOWN=0,AAM="login",ACUR=null,ATR=0,AUNS=null,ACODE=null,ACT=0,ADP=null,AREQ=[],ADPL=[],ASUB=0;
+try{AME=sessionStorage.getItem("sc_me")||null;AOWN=+sessionStorage.getItem("sc_own")||0}catch(e){}
+var ajf=function(p,m,b){return fetch(AFB+"/"+p+".json",{method:m||"GET",body:b==null?undefined:JSON.stringify(b)}).then(function(r){if(!r.ok)throw{code:"http_"+r.status};return r.json()})};
+var asn=function(id,v){return{id:id,exists:v!=null,data:function(){return v==null?undefined:v}}};
+var apoll=function(fn,next,err){var on=1,last=null;var tick=async function(){if(!on)return;try{var v=await fn(),j=JSON.stringify(v);if(j!==last){last=j;next(v)}}catch(e){err&&err(e)}if(on)setTimeout(tick,2000)};tick();return function(){on=0}};
+var adb={doc:function(p){var id=p.split("/").pop();return{get:async function(){return asn(id,await ajf(p))},set:function(d){return ajf(p,"PUT",d)},update:function(d){return ajf(p,"PATCH",d)},delete:function(){return ajf(p,"DELETE")},onSnapshot:function(n,e){return apoll(function(){return ajf(p)},function(v){n(asn(id,v))},e)}}},
+collection:function(p){return{onSnapshot:function(n,e){return apoll(function(){return ajf(p)},function(v){n({docs:Object.entries(v||{}).map(function(k){return asn(k[0],k[1])})})},e)}}}};
+var asha=async function(t){return Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t)))).map(function(b){return b.toString(16).padStart(2,"0")}).join("")};
+function auSess(){try{sessionStorage.setItem("sc_me",AME||"");sessionStorage.setItem("sc_own",AOWN)}catch(e){}}
+function $a(i){return document.getElementById(i)}
+function auLogin(m){$a("app").innerHTML='<div class="card"><h2 style="margin:0 0 8px">🏏 Cricket Scorer – Log in</h2><div class="mods"><button class="'+(AAM=="login"?"on":"")+'" onclick="AAM=\'login\';auLogin()">Login</button><button class="'+(AAM=="reg"?"on":"")+'" onclick="AAM=\'reg\';auLogin()">Register</button></div><p></p><input id="lu" placeholder="Username" autocapitalize="none" style="width:100%"><p></p><input id="lp" type="password" placeholder="Password" style="width:100%"><p class="hint" style="color:var(--red)">'+(m||"")+'</p><div class="row"><button class="go" onclick="auAuth()">'+(AAM=="login"?"Login":"Create account")+'</button></div></div>'}
+async function auAuth(){var u=$a("lu").value.trim().toLowerCase(),p=$a("lp").value;if(!/^[a-z0-9_]{3,20}$/.test(u))return auLogin("Username: 3-20 letters, numbers or _");
+if(u=="vidhan"){if(AAM=="reg")return auLogin("That username is reserved");if(await asha(AOS+p)!=AOH)return auLogin("Wrong username or password");AME=u;AOWN=1;auSess();return render()}
+if(AAM=="reg"&&p.length<6)return auLogin("Password must be at least 6 characters");
+try{var d=adb.doc("users/"+u),x=await d.get(),sl=Math.random().toString(36).slice(2,10);
+if(AAM=="reg"){if(x.exists)return auLogin("Username already taken");await d.set({s:sl,h:await asha(sl+p),t:Date.now()})}
+else{var v=x.exists&&x.data();if(!v||v.h!=await asha(v.s+p))return auLogin("Wrong username or password")}
+AME=u;AOWN=0;auSess();render()}catch(e){auLogin("Cannot reach the online database. Check your internet connection.")}}
+function auLogout(){auClose();AME=null;AOWN=0;auSess();auLogin()}
+function auModal(h){var d=$a("aum");if(!d){d=document.createElement("div");d.id="aum";d.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:99";document.body.appendChild(d)}d.innerHTML='<div class="card" style="max-width:380px;width:100%;text-align:center;margin:0">'+h+'</div>'}
+function auStop(){if(AUNS){try{AUNS()}catch(e){}AUNS=null}ACODE=null}
+function auClose(){auStop();var d=$a("aum");if(d)d.remove()}
+function start(){if(!AME)return auLogin();if(AOWN)return startReal();auGate()}
+async function auGate(){auStop();try{var x=await adb.doc("daypass/"+AME).get();if(x.exists&&x.data().exp>Date.now()){ADP=x.data();ATR=0;return auDayUI()}}catch(e){return auModal('<h2>⚠️</h2><p>Cannot reach the online database. Check your internet connection.</p><div class="row"><button onclick="auClose()">Close</button></div>')}auAsk()}
+function auDayUI(m){auModal('<h2 style="margin:0 0 6px">🔑 Day passcode</h2><p class="hint">Enter the passcode the owner set for your account (valid today).</p><input id="dp" maxlength="12" style="width:100%;text-align:center;font-size:22px"><p class="hint" style="color:var(--red)">'+(m||"")+'</p><div class="row"><button class="go" onclick="auVd()">Start scoring</button></div><div class="row"><button onclick="auAsk()">Ask owner instead</button><button onclick="auClose()">Cancel</button></div>')}
+async function auVd(){if(!ADP||ADP.exp<Date.now())return auDayUI("This passcode has expired.");if(++ATR>8)return auDayUI("Too many tries.");if(await asha(ADP.s+$a("dp").value.trim())!=ADP.h)return auDayUI("Wrong passcode");auClose();startReal()}
+function auWait(m,end){auModal('<div style="font-size:42px">'+(end?"🚫":"⏳")+'</div><b>'+m+'</b><div class="row"><button onclick="auClose()">'+(end?"Close":"Cancel")+'</button>'+(end?'<button class="go" onclick="auAsk()">Ask again</button>':"")+'</div>')}
+async function auAsk(){auStop();ACUR=Date.now().toString(36)+Math.random().toString(36).slice(2,6);ATR=0;
+try{await adb.doc("req/"+ACUR).set({u:AME,t:Date.now(),st:"pending"})}catch(e){return auWait("Could not send the request. Check your internet connection.",1)}
+auWait("Waiting for the owner to accept your request…");var shown=0;
+AUNS=adb.doc("grants/"+ACUR).onSnapshot(function(sn){if(!sn.exists||shown)return;var v=sn.data();
+if(v.st=="rejected"){shown=1;auStop();auWait("❌ The owner rejected your request.",1)}else if(v.st=="ok"){shown=1;ACODE=String(v.c);ACT=v.t;auCodeUI()}},function(){})}
+function auCodeUI(m){auModal('<h2 style="margin:0 0 6px">✅ Owner accepted</h2><p class="hint">Your one-time passcode (shown only once, valid 5 minutes):</p><div style="font-size:34px;font-weight:800;letter-spacing:8px">'+esc(ACODE||"------")+'</div><input id="pc" inputmode="numeric" maxlength="6" value="'+esc(ACODE||"")+'" style="width:100%;text-align:center;font-size:22px;margin-top:10px"><p class="hint" style="color:var(--red)">'+(m||"")+'</p><div class="row"><button class="go" onclick="auVc()">Start scoring</button></div><div class="row"><button onclick="auClose()">Cancel</button></div>')}
+function auVc(){var c=$a("pc").value.trim();if(!ACODE)return auWait("This passcode was already used. Ask again.",1);if(++ATR>5){auStop();return auWait("Too many wrong tries.",1)}if(Date.now()-ACT>3e5){auStop();return auWait("Passcode expired.",1)}if(c!=ACODE)return auCodeUI("Wrong passcode");auClose();startReal()}
+function auOwnerPg(){setTimeout(auSubs,0);return '<div class="card"><b>🔑 Day passcodes</b><p class="hint">Set a passcode for an account for 24 hours. That account starts scoring with it – no approval needed. Save again to change it, or remove it any time.</p><input id="dpu" placeholder="Username" autocapitalize="none" style="width:100%"><p></p><input id="dpp" placeholder="Passcode (4-12 characters)" maxlength="12" style="width:100%"><div class="row"><button class="go" onclick="auSaveDP()">Save for 24 hours</button><button onclick="$a(\'dpp\').value=String(100000+Math.floor(Math.random()*900000))">Generate</button></div><div id="dl"></div></div><div class="card"><b>👥 Registered users</b><p class="hint">Passwords are stored scrambled, so nobody can read them. If someone forgets theirs, tap Reset and give them a new one.</p><div id="ul"><p class="hint">Loading…</p></div></div><div class="card"><b>👤 Start requests</b><div id="ol"><p class="hint">Waiting for requests…</p></div></div>'}
+function auSubs(){if(!ASUB){ASUB=1;adb.collection("users").onSnapshot(function(sn){AUL=sn.docs.map(function(d){return{u:d.id,t:(d.data()||{}).t||0}}).sort(function(x,y){return x.u<y.u?-1:1});auPaint()},function(){});adb.collection("daypassp").onSnapshot(function(sn){ADPL=sn.docs.map(function(d){return Object.assign({u:d.id},d.data())}).filter(function(x){return x.exp>Date.now()});auPaint()},function(){});
+adb.collection("req").onSnapshot(function(sn){AREQ=sn.docs.map(function(d){return Object.assign({id:d.id},d.data())}).filter(function(x){return x.u&&Date.now()-x.t<6e5}).sort(function(x,y){return y.t-x.t});auPaint()},function(){})}auPaint()}
+var AUL=[];
+async function auReset(u){var p=prompt("New password for "+u+" (at least 6 characters)");if(p===null)return;p=p.trim();if(p.length<6)return alert("Password must be at least 6 characters");var sl=Math.random().toString(36).slice(2,10);try{await adb.doc("users/"+u).update({s:sl,h:await asha(sl+p)});alert("Password changed. Tell "+u+" the new password: "+p)}catch(e){alert("Could not change. Check your internet connection.")}}
+function auPaint(){var dl=$a("dl"),ol=$a("ol"),ul=$a("ul");if(ul)ul.innerHTML=AUL.length?AUL.map(function(x){return'<div class="cm"><b>👤 '+esc(x.u)+'</b>'+(x.t?' <span class="hint">joined '+new Date(x.t).toLocaleDateString()+'</span>':'')+' <button data-u="'+esc(x.u)+'" onclick="auReset(this.dataset.u)">Reset password</button></div>'}).join(""):'<p class="hint">No users yet</p>';
+if(dl)dl.innerHTML=ADPL.map(function(x){return '<div class="cm"><b>👤 '+esc(x.u)+'</b> · until '+new Date(x.exp).toLocaleString()+'<br><b>'+esc(x.p)+'</b> <button data-u="'+esc(x.u)+'" data-p="'+esc(x.p)+'" onclick="auEdit(this)">Edit</button> <button data-u="'+esc(x.u)+'" onclick="auDelDP(this.dataset.u)">Remove</button></div>'}).join("");
+if(ol)ol.innerHTML=AREQ.length?AREQ.map(function(x){return '<div class="cm"><b>👤 '+esc(x.u)+'</b> wants to start · '+new Date(x.t).toLocaleTimeString()+'<br>'+(x.st=="pending"?'<button class="go" data-i="'+esc(x.id)+'" onclick="auDecide(this.dataset.i,1)">✅ Accept</button> <button data-i="'+esc(x.id)+'" onclick="auDecide(this.dataset.i,0)">❌ Reject</button>':'<span class="hint">'+(x.st=="ok"?"Accepted – code sent":"Rejected")+'</span>')+'</div>'}).join(""):'<p class="hint">Waiting for requests…</p>'}
+function auEdit(b){$a("dpu").value=b.dataset.u;$a("dpp").value=b.dataset.p}
+async function auSaveDP(){var u=$a("dpu").value.trim().toLowerCase(),p=$a("dpp").value.trim();if(!/^[a-z0-9_]{3,20}$/.test(u)||p.length<4)return alert("Enter a username and a passcode of 4-12 characters");var sl=Math.random().toString(36).slice(2,10),exp=Date.now()+864e5;try{await adb.doc("daypass/"+u).set({s:sl,h:await asha(sl+p),exp:exp});await adb.doc("daypassp/"+u).set({p:p,exp:exp});$a("dpp").value="";$a("dpu").value=""}catch(e){alert("Could not save. Check your internet connection.")}}
+async function auDelDP(u){try{await adb.doc("daypass/"+u).delete();await adb.doc("daypassp/"+u).delete()}catch(e){alert("Could not remove")}}
+async function auDecide(id,ok){try{if(ok)await adb.doc("grants/"+id).set({st:"ok",c:String(100000+(crypto.getRandomValues(new Uint32Array(1))[0]%900000)),t:Date.now()});else await adb.doc("grants/"+id).set({st:"rejected",t:Date.now()});await adb.doc("req/"+id).update({st:ok?"ok":"rejected"})}catch(e){alert("Could not save. Check your internet connection.")}}
+
+/* ===== Tournament: fixtures, points table, public sharing, player IDs, stats, friends ===== */
+function tnLoad(){try{return JSON.parse(localStorage.getItem("cricket-tourn-v1"))}catch(e){return null}}
+var TN=tnLoad(),VT=null,BL=[],BSUB=0,PID=null;
+function tnRid(){return Math.random().toString(36).slice(2,10)}
+if(TN){TN.id=TN.id||tnRid();TN.fx=TN.fx||[];TN.org=TN.org||AME}
+function tnSave(){try{localStorage.setItem("cricket-tourn-v1",JSON.stringify(TN))}catch(e){}if(TN&&AME)adb.doc("tournaments/"+TN.id).set(TN).catch(function(){})}
+function tnLines(txt,db){return String(txt).split("\n").map(function(l){return l.trim()}).filter(Boolean).map(function(l){var id=(l.match(/@([a-z0-9_]{3,20})/i)||[])[1];if(id){id=id.toLowerCase();l=l.replace(/@[a-z0-9_]+/i,"").trim()}var m=l.match(/^(.*?)[,\s]+(\d+)\s*$/);return{n:(m?m[1]:l).replace(/[,\s]+$/,"").trim(),b:m?+m[2]:db,id:id||"",t:-1,pr:0,u:0}})}
+async function tnCheckIds(arr){var miss=arr.filter(function(p){return!p.id}).map(function(p){return p.n});if(miss.length)return"Every player needs an ID. Missing for: "+miss.join(", ")+". Format: Name @id, base price";
+var bad=[],seen={};try{for(var k=0;k<arr.length;k++){var id=arr[k].id;if(seen[id]||id=="vidhan")continue;seen[id]=1;var x=await adb.doc("users/"+id).get();if(!x.exists)bad.push(id)}}catch(e){return"Cannot reach the online database."}
+return bad.length?"These IDs are not registered yet: "+bad.join(", ")+". Players must register first.":""}
+function tnGen(T){var f=[];for(var r=0;r<T.rn;r++)for(var i=0;i<T.teams.length;i++)for(var j=i+1;j<T.teams.length;j++)f.push({a:i,b:j,r:"",sc:""});return f}
+async function tnCreate(){var nm=g("tn")||"My Tournament",pu=parseInt(g("tp"))||1000,db=parseInt(g("tb"))||20,rn=Math.max(1,parseInt(g("tr"))||1),tm=String($a("tt").value).split("\n").map(function(x){return x.trim()}).filter(Boolean),pl=tnLines($a("tpl").value,db);
+if(tm.length<2||!pl.length)return alert("Add at least 2 teams and 1 player");
+var er=await tnCheckIds(pl);if(er)return alert(er);
+TN={id:tnRid(),org:AME,n:nm,rn:rn,auc:$a("ta").checked,purse:pu,teams:tm.map(function(n){return{n:n,p:pu}}),pl:pl,cur:-1,bid:0,by:-1,step:10};TN.fx=tnGen(TN);tnSave();render()}
+function tnToggle(){TN.auc=!TN.auc;tnSave();render()}
+async function tnAddPl(){var a=tnLines($a("tpn").value,parseInt(g("tb2"))||20);if(!a.length)return;var er=await tnCheckIds(a);if(er)return alert(er);TN.pl=TN.pl.concat(a);tnSave();render()}
+function tnAssign(i,v){TN.pl[i].t=+v;tnSave();render()}
+function tnDel(){if(!confirm("Delete this tournament for everyone?"))return;try{adb.doc("tournaments/"+TN.id).delete()}catch(e){}TN=null;try{localStorage.removeItem("cricket-tourn-v1")}catch(e){}render()}
+function tnRegen(){if(!confirm("Reset all fixtures and results?"))return;TN.fx=tnGen(TN);tnSave();render()}
+function tnToTeams(){var T=loadT();TN.teams.forEach(function(t,i){var n=TN.pl.filter(function(p){return p.t===i}).map(function(p){return p.n});if(n.length)T[t.n]=n});saveT(T);alert("Squads sent to Teams. Pick them when you start a match.")}
+function tnRes(i,r){TN.fx[i].r=TN.fx[i].r===r?"":r;tnSave();render()}
+function tnSc(i,v){TN.fx[i].sc=v;tnSave()}
+function tnTable(T){var R=T.teams.map(function(t){return{n:t.n,p:0,w:0,l:0,t:0,nr:0,pts:0}});(T.fx||[]).forEach(function(f){if(!f.r)return;var A=R[f.a],B=R[f.b];A.p++;B.p++;if(f.r=="a"){A.w++;B.l++;A.pts+=2}else if(f.r=="b"){B.w++;A.l++;B.pts+=2}else if(f.r=="t"){A.t++;B.t++;A.pts++;B.pts++}else{A.nr++;B.nr++;A.pts++;B.pts++}});
+R.sort(function(x,y){return y.pts-x.pts||y.w-x.w});var td=function(a,c){return'<tr'+(c?' class="hint"':'')+'>'+a.map(function(x,j){return'<td'+(j?' class="r"':'')+'>'+x+'</td>'}).join("")+'</tr>'};
+return'<div class="card"><b>Points table</b><table>'+td(["Team","P","W","L","T","NR","Pts"],1)+R.map(function(r){return td([esc(r.n),r.p,r.w,r.l,r.t,r.nr,"<b>"+r.pts+"</b>"])}).join("")+'</table><p class="hint">Win 2 points · tie or no result 1 point</p></div>'}
+function tnFxHtml(T,edit){var fx=T.fx||[];return'<div class="card"><b>Fixtures</b>'+fx.map(function(f,i){var A=esc(T.teams[f.a].n),B=esc(T.teams[f.b].n),rt=f.r=="a"?A+" won":f.r=="b"?B+" won":f.r=="t"?"Tie":f.r=="n"?"No result":"upcoming";
+var h='<div class="cm"><b>M'+(i+1)+'</b> '+A+' vs '+B+' · <b>'+rt+'</b>'+(f.sc?' · '+esc(f.sc):'')+(f.st?' ✅':'');
+if(edit)h+='<div class="mods" style="margin-top:6px">'+[["a",A+" won"],["b",B+" won"],["t","Tie"],["n","No result"]].map(function(x){return'<button class="'+(f.r===x[0]?"on":"")+'" onclick="tnRes('+i+',\''+x[0]+'\')">'+x[1]+'</button>'}).join("")+'</div><input value="'+esc(f.sc||"")+'" placeholder="Score note" onchange="tnSc('+i+',this.value)" style="width:100%;margin-top:6px"><select onchange="tnAttach('+i+',this.value)" style="width:100%;margin-top:6px"><option value="">Add player stats from a saved match…</option>'+loadA().map(function(a,k){return'<option value="'+k+'">'+esc(a.m.a)+' vs '+esc(a.m.b)+'</option>'}).join("")+'</select>';
+return h+'</div>'}).join("")+'</div>'}
+function tnSquads(T){return(T.teams||[]).map(function(t,i){var sq=(T.pl||[]).filter(function(p){return p.t===i});return'<div class="card"><b>'+esc(t.n)+'</b>'+(T.auc?' · purse '+t.p:'')+' · '+sq.length+' players'+sq.map(function(p){return'<div class="cm">'+esc(p.n)+(p.id?' <a href="#" onclick="plOpen(\''+p.id+'\');return false">@'+p.id+'</a>':'')+(p.pr?' <b>'+p.pr+'</b>':'')+'</div>'}).join("")+'</div>'}).join("")}
+async function tnAttach(i,k){if(k==="")return;var A=loadA()[+k].m,M={},mp={};TN.pl.forEach(function(p){if(p.id)mp[p.n.toLowerCase()]=p.id});
+[0,1].forEach(function(j){var s=statsL(A.log[j]);Object.keys(s.B).forEach(function(n){var b=s.B[n],e=M[n]||(M[n]={r:0,b:0,f4:0,f6:0,inn:0,no:0,bb:0,br:0,wk:0});if(b.b||b.o){e.inn=1;e.no=b.o?0:1;e.r+=b.r;e.b+=b.b;e.f4+=b.f4;e.f6+=b.f6}});Object.keys(s.W).forEach(function(n){var w=s.W[n],e=M[n]||(M[n]={r:0,b:0,f4:0,f6:0,inn:0,no:0,bb:0,br:0,wk:0});e.bb+=w.b;e.br+=w.r;e.wk+=w.w})});
+var c=0;try{for(var n in M){var id=mp[n.toLowerCase()];if(!id)continue;var e=M[n];e.m=A.a+" vs "+A.b;e.tn=TN.n;e.t=Date.now();await ajf("pstats/"+id+"/"+TN.id+"_"+i,"PUT",e);c++}}catch(x){return alert("Cannot reach the online database.")}
+TN.fx[i].st=1;tnSave();alert(c?"Stats added for "+c+" players with IDs.":"No players in that match matched your tournament players. Names must match exactly.");render()}
+function tourPg(){
+ if(!TN)return'<div class="card"><b>🏆 New tournament</b><p></p><input id="tn" placeholder="Tournament name" style="width:100%"><p></p><label><input type="checkbox" id="ta" checked> Run a player auction (optional)</label><p class="hint">Everyone who logs in can see your tournament. Every player needs an ID (their registered username).</p><div class="row"><input id="tr" type="number" value="1" placeholder="Rounds"><input id="tp" type="number" value="1000" placeholder="Purse per team"><input id="tb" type="number" value="20" placeholder="Default base"></div><p class="hint">Rounds = how many times each team plays every other team.</p><p class="hint">Teams (one per line)</p><textarea id="tt" rows="4" style="width:100%"></textarea><p class="hint">Players: Name @id, base price (one per line)</p><textarea id="tpl" rows="6" style="width:100%" placeholder="Rohit @rohit45, 30"></textarea><div class="row"><button class="go" onclick="tnCreate()">Create</button></div></div>';
+ var h='<div class="card"><b>🏆 '+esc(TN.n)+'</b> <span class="hint">public</span><div class="row"><button class="'+(TN.auc?"go":"")+'" onclick="tnToggle()">Auction: '+(TN.auc?"ON":"OFF")+'</button><button onclick="tnToTeams()">Send squads to Teams</button></div><p class="hint">'+(TN.auc?"Open the Auction tab to bid for players.":"Assign each player to a team below.")+'</p></div>'+tnTable(TN)+tnFxHtml(TN,1)+tnSquads(TN);
+ h+='<div class="card"><b>Players</b>'+TN.pl.map(function(p,i){return'<div class="cm">'+esc(p.n)+' <span class="hint">@'+esc(p.id||"?")+'</span> · base '+p.b+' · '+(TN.auc?(p.t>=0?'<b>'+esc(TN.teams[p.t].n)+' '+p.pr+'</b>':(p.u?'unsold':'waiting')):'<select onchange="tnAssign('+i+',this.value)"><option value="-1">No team</option>'+TN.teams.map(function(t,k){return'<option value="'+k+'"'+(p.t===k?' selected':'')+'>'+esc(t.n)+'</option>'}).join("")+'</select>')+'</div>'}).join("")+'</div>';
+ return h+'<div class="card"><b>Add more players</b><textarea id="tpn" rows="3" style="width:100%" placeholder="Name @id, base price"></textarea><input id="tb2" type="number" value="20" style="width:100px"><div class="row"><button onclick="tnAddPl()">Add</button><button onclick="tnRegen()">Reset fixtures</button><button onclick="tnDel()">Delete</button></div></div>'}
+function brPg(){setTimeout(brSubs,0);return'<div id="bl"><div class="card"><p class="hint">Loading tournaments…</p></div></div>'}
+function brSubs(){if(!BSUB){BSUB=1;adb.collection("tournaments").onSnapshot(function(sn){BL=sn.docs.map(function(d){return d.data()}).filter(function(x){return x&&x.id});brPaint()},function(){})}brPaint()}
+function brPaint(){var el=$a("bl");if(!el)return;el.innerHTML=BL.length?BL.map(function(t){return'<div class="card"><b>'+esc(t.n)+'</b> <span class="hint">by '+esc(t.org||"?")+' · '+(t.teams||[]).length+' teams</span><div class="row"><button class="go" onclick="tvOpen(\''+esc(t.id)+'\')">View</button></div></div>'}).join(""):'<div class="card"><p class="hint">No public tournaments yet.</p></div>'}
+function tvOpen(id){VT=BL.filter(function(t){return t.id===id})[0]||null;go("tv")}
+function tvPg(){if(!VT)return'<div class="card"><p class="hint">Open a tournament from Browse.</p></div>';return'<div class="card"><b>🏆 '+esc(VT.n)+'</b> <span class="hint">organizer '+esc(VT.org||"?")+'</span><div class="row"><button onclick="go(\'br\')">Back to Browse</button></div></div>'+tnTable(VT)+tnFxHtml(VT,0)+tnSquads(VT)}
+function plOpen(id){PID=id;go("pl")}
+function plPg(){PU=[];setTimeout(function(){plFill();plLb()},0);return'<div class="card"><b>🔍 Search profiles by username</b><div class="row"><input id="pq" placeholder="Type a username…" autocapitalize="none" oninput="plSug()" style="flex:1"><button class="go" onclick="plSearch()">Search</button></div><div id="psg"></div></div><div id="plc"><div class="card"><p class="hint">Loading…</p></div></div><div id="lb"></div>'}
+function plSearch(){PID=$a("pq").value.trim().toLowerCase();plFill()}
+async function plFill(){var el=$a("plc");if(!el)return;var id=PID||AME,me=id===AME,h="";
+try{var ex=id=="vidhan"||(await adb.doc("users/"+id).get()).exists;if(!ex){el.innerHTML='<div class="card"><p class="hint">No player with the ID "'+esc(id)+'".</p></div>';return}
+var ps=(await ajf("pstats/"+id))||{},fr=(await ajf("friends/"+AME))||{},inc=(await ajf("freq/"+AME))||{},out=(await ajf("freq/"+id+"/"+AME));
+var S2={m:0,inn:0,no:0,r:0,b:0,f4:0,f6:0,hs:0,wk:0,bb:0,br:0},rows=[];Object.keys(ps).forEach(function(k){var e=ps[k];S2.m++;S2.inn+=e.inn||0;S2.no+=e.no||0;S2.r+=e.r||0;S2.b+=e.b||0;S2.f4+=e.f4||0;S2.f6+=e.f6||0;S2.wk+=e.wk||0;S2.bb+=e.bb||0;S2.br+=e.br||0;if((e.r||0)>S2.hs)S2.hs=e.r;rows.push(e)});
+var avg=S2.inn-S2.no>0?(S2.r/(S2.inn-S2.no)).toFixed(1):S2.r?"–":"0",sr=S2.b?(S2.r*100/S2.b).toFixed(1):"0",eco=S2.bb?(S2.br*6/S2.bb).toFixed(2):"0",ov=Math.floor(S2.bb/6)+"."+S2.bb%6;
+var fb=me?"":(fr[id]?'<span class="hint">✅ Friends</span>':(inc[id]?'<button class="go" onclick="plAcc(\''+id+'\')">Accept friend request</button>':(out?'<span class="hint">Request sent</span>':'<button class="go" onclick="plSend(\''+id+'\')">Send friend request</button>')));
+var row=function(a,c){return'<tr'+(c?' class="hint"':'')+'>'+a.map(function(x,j){return'<td'+(j?' class="r"':'')+'>'+x+'</td>'}).join("")+'</tr>'};
+h='<div class="card"><b>👤 '+esc(id)+(me?" (you)":"")+'</b><div class="row">'+fb+'</div><p class="hint">Stats come from matches the organizer added to tournaments.</p><b>Batting</b><table>'+row(["Mat","Inns","Runs","HS","Avg","SR","4s","6s"],1)+row([S2.m,S2.inn,S2.r,S2.hs,avg,sr,S2.f4,S2.f6])+'</table><b>Bowling</b><table>'+row(["Overs","Runs","Wkts","Econ"],1)+row([ov,S2.br,S2.wk,eco])+'</table></div>';
+if(rows.length)h+='<div class="card"><b>Recent matches</b>'+rows.sort(function(x,y){return(y.t||0)-(x.t||0)}).slice(0,10).map(function(e){return'<div class="cm">'+esc(e.m||"")+' · '+esc(e.tn||"")+'<br>'+(e.inn?e.r+' ('+e.b+') ':'')+(e.bb?e.wk+'/'+e.br+' in '+Math.floor(e.bb/6)+'.'+e.bb%6+' ov':'')+'</div>'}).join("")+'</div>';
+if(me){var rq=Object.keys(inc),fl=Object.keys(fr);h+='<div class="card"><b>Friend requests</b>'+(rq.length?rq.map(function(f){return'<div class="cm"><a href="#" onclick="plOpen(\''+f+'\');return false">@'+f+'</a> <button class="go" onclick="plAcc(\''+f+'\')">Accept</button> <button onclick="plDec(\''+f+'\')">Decline</button></div>'}).join(""):'<p class="hint">None</p>')+'</div><div class="card"><b>Friends</b>'+(fl.length?fl.map(function(f){return'<div class="cm"><a href="#" onclick="plOpen(\''+f+'\');return false">@'+f+'</a></div>'}).join(""):'<p class="hint">No friends yet. Search a player ID to send a request.</p>')+'</div>'}
+el.innerHTML=h}catch(e){el.innerHTML='<div class="card"><p class="hint">Cannot reach the online database. Check your internet connection.</p></div>'}}
+async function plLb(){var el=$a("lb");if(!el)return;try{var all=(await ajf("pstats"))||{},P={};Object.keys(all).forEach(function(id){Object.keys(all[id]).forEach(function(k){var e=all[id][k],p=P[id]||(P[id]={id:id,m:0,r:0,b:0,f6:0,f4:0,wk:0,bb:0,br:0,hs:0});p.m++;p.r+=e.r||0;p.b+=e.b||0;p.f6+=e.f6||0;p.f4+=e.f4||0;p.wk+=e.wk||0;p.bb+=e.bb||0;p.br+=e.br||0;if((e.r||0)>p.hs)p.hs=e.r})});
+var A=Object.keys(P).map(function(k){return P[k]});if(!A.length){el.innerHTML='<div class="card"><b>🏅 Leaderboards</b><p class="hint">Appear once organizers add match stats.</p></div>';return}
+var top=function(t,f,fmt,flt){var a=A.filter(flt||function(){return 1}).sort(function(x,y){return f(y)-f(x)}).slice(0,5);return'<div class="card"><b>'+t+'</b>'+a.map(function(p,i){return'<div class="cm">'+(i+1)+'. <a href="#" onclick="plOpen(\''+p.id+'\');return false">@'+esc(p.id)+'</a> <b style="float:right">'+fmt(p)+'</b></div>'}).join("")+'</div>'};
+el.innerHTML='<div class="hint" style="margin:6px 2px"><b>🏅 Leaderboards</b></div>'+top("Most runs",function(p){return p.r},function(p){return p.r+" runs (HS "+p.hs+")"})+top("Most wickets",function(p){return p.wk},function(p){return p.wk+" wkts"})+top("Most sixes",function(p){return p.f6},function(p){return p.f6+" sixes"})+top("Best strike rate (30+ balls)",function(p){return p.b?p.r/p.b:0},function(p){return(p.r*100/p.b).toFixed(1)},function(p){return p.b>=30})+top("Best economy (6+ overs)",function(p){return p.bb?-p.br/(p.bb/6):-99},function(p){return(p.br*6/p.bb).toFixed(2)},function(p){return p.bb>=36})}catch(e){el.innerHTML=""}}
+async function plSend(id){try{await ajf("freq/"+id+"/"+AME,"PUT",{t:Date.now()})}catch(e){alert("Could not send")}plFill()}
+async function plAcc(f){try{await ajf("friends/"+AME+"/"+f,"PUT",1);await ajf("friends/"+f+"/"+AME,"PUT",1);await ajf("freq/"+AME+"/"+f,"DELETE")}catch(e){alert("Could not accept")}plFill()}
+async function plDec(f){try{await ajf("freq/"+AME+"/"+f,"DELETE")}catch(e){}plFill()}
+function tnNext(){var r=[];TN.pl.forEach(function(p,i){if(p.t<0&&!p.u)r.push(i)});if(!r.length)return;TN.cur=r[Math.floor(Math.random()*r.length)];TN.bid=0;TN.by=-1;tnSave();render()}
+function tnBid(i){var p=TN.pl[TN.cur];if(TN.by===i)return;var nb=TN.by<0?p.b:TN.bid+TN.step;if(TN.teams[i].p<nb)return alert(TN.teams[i].n+" does not have enough purse");TN.bid=nb;TN.by=i;tnSave();render()}
+function tnSold(){if(TN.by<0)return alert("No bids yet. Tap a team to bid, or mark Unsold.");var p=TN.pl[TN.cur];p.t=TN.by;p.pr=TN.bid;TN.teams[TN.by].p-=TN.bid;TN.cur=-1;TN.by=-1;TN.bid=0;tnSave();render()}
+function tnUnsold(){TN.pl[TN.cur].u=1;TN.cur=-1;TN.by=-1;TN.bid=0;tnSave();render()}
+function tnRequeue(){TN.pl.forEach(function(p){p.u=0});tnSave();render()}
+function aucPg(){
+ if(!TN||!TN.auc)return '<div class="card"><p class="hint">Create a tournament with the auction option on to use this tab.</p></div>';
+ var rem=TN.pl.filter(function(p){return p.t<0&&!p.u}).length,un=TN.pl.filter(function(p){return p.u}).length,h;
+ if(TN.cur>=0&&TN.pl[TN.cur]){var p=TN.pl[TN.cur];h='<div class="card" style="text-align:center"><div class="hint">Now on the block</div><h2 style="margin:4px 0">'+esc(p.n)+'</h2><div>Base price: <b>'+p.b+'</b></div><div style="font-size:30px;font-weight:800;margin:8px 0">'+(TN.by>=0?TN.bid+' · '+esc(TN.teams[TN.by].n):'No bids yet')+'</div><p class="hint">Tap the team that bids. Each tap raises the bid by the step.</p><label class="hint">Step <input type="number" value="'+TN.step+'" onchange="TN.step=Math.max(1,+this.value||10);tnSave()" style="width:90px"></label><div class="mods" style="margin-top:8px">'+TN.teams.map(function(t,i){return '<button class="'+(TN.by===i?"on":"")+'" onclick="tnBid('+i+')">'+esc(t.n)+' ('+t.p+')</button>'}).join("")+'</div><div class="row"><button class="go" onclick="tnSold()">Sold</button><button onclick="tnUnsold()">Unsold</button></div></div>'}
+ else h='<div class="card" style="text-align:center"><b>'+esc(TN.n)+' auction</b><p class="hint">'+rem+' players waiting · '+un+' unsold</p><div class="row">'+(rem?'<button class="go" onclick="tnNext()">Next player</button>':'')+(un?'<button onclick="tnRequeue()">Bring back unsold</button>':'')+'</div>'+(!rem&&!un?'<p class="hint">Auction finished. Use Send squads to Teams in the Tournament tab.</p>':'')+'</div>';
+ h+='<div class="card"><b>Teams</b>'+TN.teams.map(function(t,i){return '<div class="cm">'+esc(t.n)+' · purse <b>'+t.p+'</b> · '+TN.pl.filter(function(p){return p.t===i}).length+' players</div>'}).join("")+'</div>';
+ return h+'<div class="card"><b>Sold</b>'+(TN.pl.filter(function(p){return p.t>=0}).map(function(p){return '<div class="cm">'+esc(p.n)+' → '+esc(TN.teams[p.t].n)+' <b>'+p.pr+'</b></div>'}).join("")||'<p class="hint">No sales yet</p>')+'</div>'}
+
+/* ===== Fixtures, points table and series ===== */
+/* ===== Live scores ===== */
+var LVU=null,LD=null,LL=[],LSUB=0,LO=null;
+function livePush(){if(LIVE||!AME||S.setup||!S.log)return;try{var d=JSON.parse(JSON.stringify(S));d.ts=Date.now();d.org=AME;ajf("live/"+AME,"PUT",d).catch(function(){})}catch(e){}}
+function lvNorm(d){d.log=[(d.log&&d.log[0])||[],(d.log&&d.log[1])||[]];d.cur=[(d.cur&&d.cur[0])||{},(d.cur&&d.cur[1])||{}];d.sq=[(d.sq&&d.sq[0])||[],(d.sq&&d.sq[1])||[]];d.log.forEach(function(l){l.forEach(function(e){e.s=e.s||{}})});return d}
+function lvBrief(d){d=lvNorm(JSON.parse(JSON.stringify(d)));var k=S;S=d;try{var i=d.inn,c=calc(i),fin=d.inn===1&&ended(1);return{t:team(i)+" "+c.r+"/"+c.w+" ("+ovr(c.b)+")",fin:fin,res:fin?result():""}}finally{S=k}}
+function livePg(){setTimeout(lvSubs,0);return'<div class="card"><b>🔴 Live matches</b><p class="hint">Scores update every few seconds while the scorer is scoring.</p></div><div id="ll"><div class="card"><p class="hint">Loading…</p></div></div>'}
+function lvSubs(){if(!LSUB){LSUB=1;adb.collection("live").onSnapshot(function(sn){LL=sn.docs.map(function(d){return d.data()}).filter(function(x){return x&&x.a&&x.org});lvList()},function(){})}lvList()}
+function lvList(){var el=$a("ll");if(!el)return;var a=LL.slice().sort(function(x,y){return(y.ts||0)-(x.ts||0)});el.innerHTML=a.length?a.map(function(d){var b=lvBrief(d),on=!b.fin&&Date.now()-(d.ts||0)<6e5;return'<div class="card"><b>'+esc(d.a)+' vs '+esc(d.b)+'</b> <span class="hint">'+(on?'🔴 LIVE':b.fin?'Finished':'Not live')+' · scorer '+esc(d.org)+'</span><div style="font-size:20px;font-weight:800;margin:6px 0">'+esc(b.t)+'</div>'+(b.fin?'<div class="hint">'+esc(b.res)+'</div>':'')+'<div class="row"><button class="go" data-o="'+esc(d.org)+'" onclick="lvOpen(this.dataset.o)">Watch</button></div></div>'}).join(""):'<div class="card"><p class="hint">No matches yet. When someone starts scoring, it appears here.</p></div>'}
+function lvOpen(o){LO=o;LD=null;go("lv")}
+function lvPg(){setTimeout(function(){if(LVU)LVU();LVU=adb.doc("live/"+LO).onSnapshot(function(sn){if(sn.exists){LD=lvNorm(sn.data());lvPaint()}},function(){})},0);return'<div class="row" style="margin:0 0 12px"><button onclick="go(\'live\')">← All live matches</button></div><div id="lvc"><div class="card"><p class="hint">Loading…</p></div></div>'}
+function lvPaint(){var el=$a("lvc");if(!el||!LD)return;var k=S,h="";S=LD;try{var i=S.inn,c=calc(i),cur=S.cur[i],fin=i===1&&ended(1),done=ended(i),st=stats(i),on=!fin&&Date.now()-(S.ts||0)<6e5;
+h+='<div class="card"><div class="team">'+esc(S.a)+' vs '+esc(S.b)+' · '+(on?'🔴 LIVE':fin?'Finished':'Not live now')+'</div><div class="team">'+esc(team(i))+' batting · innings '+(i+1)+'</div><div class="num score">'+c.r+'<small>/'+c.w+'</small></div><div class="meta"><span>Overs <b>'+ovr(c.b)+'</b> / '+S.ov+'</span><span>Run rate <b>'+(c.b?(c.r/(c.b/6)).toFixed(2):"0.00")+'</b></span></div>';
+if(i===1&&!done){var need=calc(0).r+1-c.r,left=S.ov*6-c.b;h+='<div class="msg">'+esc(team(1))+' need '+need+' from '+left+' ball'+(left===1?"":"s")+'</div>'}
+if(fin)h+='<div class="msg">'+esc(result())+'</div>';else if(done&&i===0)h+='<div class="msg">Innings over. '+esc(team(1))+' need '+(c.r+1)+' to win.</div>';
+h+='</div>';
+if(!done&&(cur.st||cur.ns||cur.bw)){var row=function(n,s2){if(!n)return"";var b=st.B[n]||{r:0,b:0};return'<tr><td class="'+(s2?"str":"")+'">'+esc(n)+(s2?" *":"")+'</td><td class="r"><b>'+b.r+'</b> ('+b.b+')</td></tr>'},w=cur.bw?(st.W[cur.bw]||{b:0,r:0,w:0}):null;h+='<div class="card"><table class="pl">'+row(cur.st,1)+row(cur.ns,0)+(w?'<tr><td>'+esc(cur.bw)+' <span class="team">bowling</span></td><td class="r"><b>'+w.w+'-'+w.r+'</b> ('+ovr(w.b)+')</td></tr>':'')+'</table><div class="meta">Partnership <b>'+partner(i)+'</b></div></div>'}
+var o=curOver(i);h+='<div class="card"><div class="team" style="margin-bottom:8px">This over</div><div class="over">'+(o.length?o.map(chipOf).join(""):'<span class="hint">No balls yet</span>')+'</div></div>';
+var cm=[];overData(i).slice().reverse().forEach(function(ov){ov.balls.slice().reverse().forEach(function(b){cm.push(line(b))})});
+h+='<div class="card"><b>Commentary</b>'+(cm.slice(0,12).join("")||'<p class="hint">No balls yet</p>')+'</div>';
+[1,0].forEach(function(j){if(S.log[j].length)h+=card(j).replace('<details class="card">','<details class="card" open>')+chart(j)})}catch(e){h='<div class="card"><p class="hint">Could not show this match.</p></div>'}finally{S=k}
+el.innerHTML=h}
+/* ===== Auction (public, live) ===== */
+var AXL=[],AXD=null,AXID=null,AXSUB=0,PU=[];
+function inr(n){return"₹"+Number(n||0).toLocaleString("en-IN")}
+function axNorm(d){d.T=d.T||[];d.P=d.P||[];d.T.forEach(function(t){t.u=t.u||""});d.P.forEach(function(p){p.s=p.s||"";if(p.t==null)p.t=-1;p.pr=p.pr||0});if(d.cur==null)d.cur=-1;if(d.bt==null)d.bt=-1;d.bid=d.bid||0;return d}
+function axBadge(p){return'<span class="bdg '+(p==="live"?"liv":"")+'">'+(p==="live"?"● LIVE":p==="done"?"Finished":"Not started")+'</span>'}
+function axPg(){setTimeout(axSubs,0);return'<div class="card"><b>🔨 Host an auction</b><p class="hint">You will be shown as the host. Everyone can watch it live.</p><div class="row"><button class="go" onclick="axForm()">+ New auction</button></div><div id="axf"></div></div><div class="hint" style="margin:6px 2px"><b>All auctions</b></div><div id="axl"><div class="card"><p class="hint">Loading…</p></div></div>'}
+function axForm(){$a("axf").innerHTML='<label>Auction name</label><input id="xn" placeholder="e.g. Street Premier League"><div class="row2"><div><label>Number of teams</label><input id="xt" type="number" min="2" value="4"></div><div><label>Players per team</label><input id="xp" type="number" min="1" value="11"></div></div><div class="row2"><div><label>Purse per team (₹)</label><input id="xu" type="number" value="10000000"></div><div><label>Players in auction</label><input id="xq" type="number" min="1" value="60"></div></div><label>Bid step (₹)</label><input id="xs" type="number" value="100000"><label>Team usernames</label><textarea id="xtm" placeholder="Royal Challengers\nMumbai Kings | login_id"></textarea><p class="hint">One team per line. Optionally add | and a registered login ID so that person can bid for the team from their own phone.</p><label>Players with base price</label><textarea id="xpl" placeholder="Virat, 2000000\nRohit, 1500000"></textarea><p class="hint">One player per line: name, base price in ₹.</p><p></p><button class="go" onclick="axCreate()">Create auction</button>'}
+function axCreate(){var nt=+g("xt"),pp=+g("xp"),pu=+g("xu"),np=+g("xq"),sp=+g("xs"),nm=g("xn")||"Auction";
+ var T=$a("xtm").value.split("\n").map(function(l){var a=l.split("|");return{n:a[0].trim(),u:(a[1]||"").trim().toLowerCase(),left:pu}}).filter(function(t){return t.n});
+ var P=$a("xpl").value.split("\n").map(function(l){var i=l.lastIndexOf(",");return{n:(i<0?l:l.slice(0,i)).trim(),base:i<0?0:parseInt(l.slice(i+1).replace(/[^0-9]/g,""))||0,s:"",t:-1,pr:0}}).filter(function(p){return p.n});
+ if(!(nt>=2&&pp>=1&&pu>0&&np>=1&&sp>0))return alert("Please fill all the numbers");
+ if(T.length!==nt)return alert("You set "+nt+" teams but listed "+T.length);
+ if(P.length!==np)return alert("You set "+np+" players but listed "+P.length);
+ if(P.some(function(p){return!p.base}))return alert("Every player needs a base price, like: Virat, 2000000");
+ if(np<nt*pp)return alert("Not enough players: "+nt+" teams × "+pp+" = "+nt*pp+" needed");
+ var id=tnRid();ajf("auctions/"+id,"PUT",{id:id,host:AME,nm:nm,nt:nt,pp:pp,np:np,purse:pu,step:sp,ph:"setup",T:T,P:P,cur:-1,bid:0,bt:-1,ts:Date.now()}).then(function(){axOpen(id)}).catch(function(){alert("Could not save. Check your internet.")})}
+function axSubs(){if(!AXSUB){AXSUB=1;adb.collection("auctions").onSnapshot(function(sn){AXL=sn.docs.map(function(d){return d.data()}).filter(function(x){return x&&x.host&&x.P});axList()},function(){})}axList()}
+function axList(){var el=$a("axl");if(!el)return;var a=AXL.slice().sort(function(x,y){return(y.ts||0)-(x.ts||0)});el.innerHTML=a.length?a.map(function(d){return'<div class="card"><div class="rw"><b>'+esc(d.nm)+'</b>'+axBadge(d.ph)+'</div><div class="hint">Hosted by @'+esc(d.host)+'</div><div class="chips"><span>'+d.nt+' teams</span><span>'+d.pp+' per team</span><span>'+inr(d.purse)+' purse</span><span>'+d.np+' players</span></div><div class="row"><button class="go" data-i="'+esc(d.id)+'" onclick="axOpen(this.dataset.i)">'+(d.ph==="live"?"Watch live":"Open")+'</button></div></div>'}).join(""):'<div class="card"><p class="hint">No auctions yet.</p></div>'}
+function axOpen(id){AXID=id;AXD=null;go("axv")}
+function axvPg(){setTimeout(function(){if(LVU)LVU();LVU=adb.doc("auctions/"+AXID).onSnapshot(function(sn){if(sn.exists){AXD=axNorm(sn.data());axPaint()}},function(){})},0);return'<div class="row" style="margin:0 0 12px"><button onclick="go(\'auc\')">← All auctions</button></div><div id="axc"><div class="card"><p class="hint">Loading…</p></div></div>'}
+function axPaint(){var el=$a("axc"),D=AXD;if(!el||!D)return;var host=AME===D.host,cp=D.cur>=0?D.P[D.cur]:null,h='';
+ h+='<div class="card hero"><div class="rw"><b style="font-size:20px">'+esc(D.nm)+'</b>'+axBadge(D.ph)+'</div><div class="hint">Hosted by <b>@'+esc(D.host)+'</b></div><div class="chips"><span>'+D.nt+' teams</span><span>'+D.pp+' players/team</span><span>'+inr(D.purse)+' purse</span><span>'+D.np+' players</span><span>Step '+inr(D.step)+'</span></div></div>';
+ if(D.ph==="setup")h+='<div class="card"><p class="hint">Waiting for the host to start.</p>'+(host?'<button class="go" onclick="axSet({ph:\'live\'})">▶ Start auction</button>':'')+'</div>';
+ if(D.ph==="live"){
+  if(cp){var nb=D.bt<0?cp.base:D.bid+D.step;
+   h+='<div class="card stage"><div class="hint">NOW ON AUCTION</div><div class="pname">'+esc(cp.n)+'</div><div class="hint">Base price '+inr(cp.base)+'</div><div class="bidv">'+inr(D.bt<0?cp.base:D.bid)+'</div><div class="hint">'+(D.bt>=0?'Leading: <b>'+esc(D.T[D.bt].n)+'</b>':'No bids yet')+'</div>';
+   var bb=D.T.map(function(t,i){return(host||(t.u&&t.u===AME))?'<button data-i="'+i+'" onclick="axBid(+this.dataset.i)"'+(D.bt===i?' disabled':'')+'>'+esc(t.n)+'<small>Bid '+inr(nb)+'</small></button>':''}).join("");
+   h+=bb?'<div class="bids">'+bb+'</div>':'<p class="hint">Only the host and team owners can bid.</p>';
+   if(host)h+='<div class="row"><button class="go" onclick="axSold()">🔨 Sold</button><button onclick="axUnsold()">Unsold</button></div>';
+   h+='</div>'}
+  else h+='<div class="card"><p class="hint">'+(host?'Bring the next player, or tap a player in the table.':'Waiting for the host to bring the next player.')+'</p>'+(host?'<button class="go" onclick="axNext()">Next player ▶</button>':'')+'</div>'}
+ if(D.ph==="done")h+='<div class="card"><b>🏁 Auction finished</b></div>';
+ h+='<div class="card"><b>Teams</b><div class="sc"><table class="tb"><tr><th>Team</th><th>Purse left</th><th>Squad</th></tr>'+D.T.map(function(t,i){var n=D.P.filter(function(p){return p.t===i}).length;return'<tr><td><b>'+esc(t.n)+'</b>'+(t.u?'<div class="hint">@'+esc(t.u)+'</div>':'')+'</td><td>'+inr(t.left)+'</td><td>'+n+'/'+D.pp+'</td></tr>'}).join("")+'</table></div></div>';
+ h+='<div class="card"><b>Players</b><div class="sc"><table class="tb"><tr><th>#</th><th>Player</th><th>Base price</th><th>Sold</th></tr>'+D.P.map(function(p,i){var r=p.s==="sold"?'<b>'+inr(p.pr)+'</b><div class="hint">'+esc((D.T[p.t]||{}).n||"")+'</div>':p.s==="unsold"?'<span class="hint">Unsold</span>':i===D.cur?'<span class="bdg liv">Bidding</span>':'<span class="hint">—</span>';return'<tr'+(i===D.cur?' class="cur"':'')+(host&&D.ph==="live"&&D.cur<0&&!p.s?' onclick="axNext('+i+')" style="cursor:pointer"':'')+'><td>'+(i+1)+'</td><td>'+esc(p.n)+'</td><td>'+inr(p.base)+'</td><td>'+r+'</td></tr>'}).join("")+'</table></div></div>';
+ el.innerHTML=h}
+function axSet(o){return ajf("auctions/"+AXID,"PATCH",o).catch(function(){alert("Could not update. Check your internet.")})}
+async function axFresh(){return axNorm(await ajf("auctions/"+AXID))}
+async function axNext(i){var D=await axFresh();if(AME!==D.host||D.cur>=0)return;if(i==null)i=D.P.findIndex(function(p){return!p.s});if(i<0)return axSet({ph:"done"});axSet({cur:i,bid:D.P[i].base,bt:-1})}
+async function axBid(i){var D=await axFresh(),t=D.T[i];if(D.ph!=="live"||D.cur<0||D.bt===i||!(AME===D.host||(t.u&&t.u===AME)))return;var nb=D.bt<0?D.P[D.cur].base:D.bid+D.step,n=D.P.filter(function(p){return p.t===i}).length;if(n>=D.pp)return alert(t.n+" already has a full squad");if(nb>t.left)return alert(t.n+" does not have enough purse");axSet({bid:nb,bt:i})}
+async function axSold(){var D=await axFresh(),c=D.cur;if(AME!==D.host||c<0)return;if(D.bt<0)return alert("No bids yet. Tap Unsold if nobody bids.");var o={};o["P/"+c+"/s"]="sold";o["P/"+c+"/t"]=D.bt;o["P/"+c+"/pr"]=D.bid;o["T/"+D.bt+"/left"]=D.T[D.bt].left-D.bid;o.cur=-1;o.bid=0;o.bt=-1;if(!D.P.some(function(p,k){return k!==c&&!p.s}))o.ph="done";axSet(o)}
+async function axUnsold(){var D=await axFresh(),c=D.cur;if(AME!==D.host||c<0)return;var o={};o["P/"+c+"/s"]="unsold";o.cur=-1;o.bid=0;o.bt=-1;if(!D.P.some(function(p,k){return k!==c&&!p.s}))o.ph="done";axSet(o)}
+async function plSug(){var q=g("pq").toLowerCase(),el=$a("psg");if(!el)return;if(!PU.length){try{PU=Object.keys((await(await fetch(AFB+"/users.json?shallow=true")).json())||{}).sort()}catch(e){}}var m=q?PU.filter(function(u){return u.indexOf(q)>-1}).slice(0,8):[];el.innerHTML=m.map(function(u){return'<div class="cm"><a href="#" onclick="plOpen(\''+u+'\');return false">👤 @'+esc(u)+'</a></div>'}).join("")||(q?'<p class="hint">No username matches</p>':"")}
+/* ===== Series (public) ===== */
+function srLoad(){try{return JSON.parse(localStorage.getItem("cricket-series-v1"))||[]}catch(e){return[]}}
+var SR=srLoad(),BS=[];SR.forEach(function(s){s.id=s.id||tnRid();s.org=s.org||AME});
+function srSave(){try{localStorage.setItem("cricket-series-v1",JSON.stringify(SR))}catch(e){}if(AME)SR.forEach(function(s){if(s.org===AME)adb.doc("series/"+s.id).set(s).catch(function(){})})}
+function srAdd(){var a=g("sra"),b=g("srb"),n=parseInt(g("srn"))||3,nm=g("srm");if(!a||!b||a===b)return alert("Enter two different team names");SR.push({id:tnRid(),org:AME,nm:nm||a+" vs "+b,a:a,b:b,n:n,r:[]});srSave();render()}
+function srSet(i,k,v){var s=SR[i];s.r[k]=s.r[k]===v?"":v;srSave();render()}
+function srDel(i){if(!confirm("Delete this series for everyone?"))return;var s=SR[i];try{adb.doc("series/"+s.id).delete()}catch(e){}SR.splice(i,1);srSave();render()}
+function srCard(s,i,edit){var wa=0,wb=0,t=0,pl=0;(s.r||[]).forEach(function(x){if(x==="a")wa++;else if(x==="b")wb++;else if(x==="t")t++;if(x)pl++});var need=Math.floor(s.n/2)+1,st;
+ if(wa>=need)st=esc(s.a)+" won the series "+wa+"–"+wb;else if(wb>=need)st=esc(s.b)+" won the series "+wb+"–"+wa;else if(pl>=s.n)st=wa===wb?"Series drawn "+wa+"–"+wb:esc(wa>wb?s.a:s.b)+" won the series "+Math.max(wa,wb)+"–"+Math.min(wa,wb);else st="In progress · first to "+need+" wins";
+ var h='<div class="card"><b>'+esc(s.nm)+'</b> <span class="hint">by '+esc(s.org||"?")+'</span><div style="font-size:22px;font-weight:800;margin:6px 0">'+esc(s.a)+' '+wa+' – '+wb+' '+esc(s.b)+'</div><div class="hint">'+st+(t?' · '+t+' tied':'')+'</div>';
+ for(var k=0;k<s.n;k++){var x=(s.r||[])[k];h+='<div class="cm"><b>Match '+(k+1)+'</b>'+(edit?'<div class="row"><button class="'+(x==="a"?"go":"")+'" onclick="srSet('+i+','+k+',\'a\')">'+esc(s.a)+'</button><button class="'+(x==="b"?"go":"")+'" onclick="srSet('+i+','+k+',\'b\')">'+esc(s.b)+'</button><button class="'+(x==="t"?"go":"")+'" onclick="srSet('+i+','+k+',\'t\')">Tie</button></div>':' · '+(x==="a"?esc(s.a)+" won":x==="b"?esc(s.b)+" won":x==="t"?"Tie":"upcoming"))+'</div>'}
+ return h+(edit?'<div class="row"><button onclick="srDel('+i+')">Delete series</button></div>':'')+'</div>'}
+function seriesPg(){setTimeout(srSubs,0);var h='<div class="card"><b>🏏 New series</b><p class="hint">A series is a set of matches between two teams. Everyone can see it in the list below.</p><input id="srm" placeholder="Series name (optional)" style="width:100%"><p></p><div class="row"><input id="sra" placeholder="Team A" list="srl"><input id="srb" placeholder="Team B" list="srl"></div><datalist id="srl">'+(TN?TN.teams.map(function(t){return '<option value="'+esc(t.n)+'">'}).join(""):"")+'</datalist><p></p><label class="hint">Number of matches <select id="srn"><option>1</option><option selected>3</option><option>5</option><option>7</option></select></label><div class="row"><button class="go" onclick="srAdd()">Create series</button></div></div>';
+ h+='<div class="hint" style="margin:6px 2px"><b>My series</b></div>'+(SR.length?SR.map(function(s,i){return srCard(s,i,1)}).join(""):'<div class="card"><p class="hint">None yet</p></div>')+'<div class="hint" style="margin:6px 2px"><b>All public series</b></div><div id="sl"></div>';return h}
+function srSubs(){if(!SSUB){SSUB=1;adb.collection("series").onSnapshot(function(sn){BS=sn.docs.map(function(d){return d.data()}).filter(function(x){return x&&x.id});srPaint()},function(){})}srPaint()}
+var SSUB=0;
+function srPaint(){var el=$a("sl");if(!el)return;var o=BS.filter(function(s){return s.org!==AME});el.innerHTML=o.length?o.map(function(s){return srCard(s,0,0)}).join(""):'<div class="card"><p class="hint">No series from other people yet.</p></div>'}
+function nav(){var T=[["match","🏏","Match"],["hist","🕘","History"],["teams","👥","Teams"],["tour","🏆","Tournament"],["auc","🔨","Auction"],["live","🔴","Live"],["br","🌐","Browse"],["pl","🔍","Players"],["series","📅","Series"],["comm","🎙️","Commentary"],["stats","📊","Stats"],["bk","💾","Backup"]].concat(AOWN?[["own","🛡️","Owner"]]:[],[["lo","🚪","Log out"]]);
+ setTimeout(function(){var b=document.querySelector(".tabs .on"),n=document.querySelector(".tabs");if(b&&n)n.scrollLeft=b.offsetLeft-n.clientWidth/2+b.offsetWidth/2},0);
+ return'<header class="top"><div class="logo">🏏 Cricket Scorer</div><div class="me">@'+esc(AME||"")+'</div></header><nav class="tabs">'+T.map(function(t){var on=V===t[0]||(V==="view"&&t[0]==="hist")||(V==="lv"&&t[0]==="live")||(V==="axv"&&t[0]==="auc");return'<button class="'+(on?"on":"")+'" onclick="go(\''+t[0]+'\')"><i>'+t[1]+'</i>'+t[2]+'</button>'}).join("")+'</nav>'}
+function render(){
+ var el=document.getElementById("app");
+ if(V==="match"){if(!LIVE&&!S.setup&&S.inn===1&&ended(1)&&!S.arch){S.arch=1;addArchive(0);save()}renderMatch();el.insertAdjacentHTML("afterbegin",nav());return}
+ el.innerHTML=nav()+({hist:hist,teams:teams,stats:statsPg,bk:bk,view:viewPg,comm:commPg,own:auOwnerPg,tour:tourPg,auc:axPg,axv:axvPg,series:seriesPg,live:livePg,lv:lvPg,br:brPg,tv:tvPg,pl:plPg}[V]||bk)();
+}
+function hist(){var A=loadA();if(!A.length)return '<div class="card"><p class="hint">No saved matches yet. Finished matches are saved here automatically.</p></div>';return A.map(function(a,k){return '<div class="card"><b>'+esc(a.m.a)+' vs '+esc(a.m.b)+'</b><div class="hint">'+esc(a.date)+' · '+a.m.ov+' overs</div><div class="msg">'+esc(a.res)+'</div><div class="row"><button onclick="openA('+k+')">Scorecard</button><button onclick="delA('+k+')">Delete</button></div></div>'}).join("")}
+function openA(k){var a=loadA()[k];LIVE=S;S=a.m;V="view";render()}
+function delA(k){if(!confirm("Delete this match from History?"))return;var A=loadA();A.splice(k,1);saveA(A);render()}
+function viewPg(){var h='<div class="card"><b>'+esc(S.a)+' vs '+esc(S.b)+'</b><div class="msg">'+esc(S.res||"")+'</div></div>';[0,1].forEach(function(i){if(S.log[i].length)h+=card(i)+chart(i)});return h+'<div class="row"><button onclick="go(\'hist\')">Back to History</button></div>'}
+function teams(){var T=loadT(),k=Object.keys(T),h='<div class="row" style="margin:0 0 12px"><button class="go" onclick="addTeam()">Add team</button></div>';if(!k.length)return h+'<div class="card"><p class="hint">Teams you use in a match are saved here with their players.</p></div>';return h+k.map(function(n){return '<div class="card"><b>'+esc(n)+'</b><p class="hint">'+esc(T[n].join(", "))+'</p><div class="row"><button data-n="'+esc(n)+'" onclick="editTeam(this.dataset.n)">Edit players</button><button data-n="'+esc(n)+'" onclick="delTeam(this.dataset.n)">Delete</button></div></div>'}).join("")}
+function addTeam(){var n=prompt("Team name");if(!n||!n.trim())return;n=n.trim();var v=prompt("Players, comma separated","");if(v===null)return;var T=loadT();T[n]=parse(v,n);saveT(T);render()}
+function editTeam(n){var T=loadT(),v=prompt("Players of "+n+", comma separated",T[n].join(", "));if(v===null)return;T[n]=parse(v,n);saveT(T);render()}
+function delTeam(n){if(!confirm("Delete team "+n+"?"))return;var T=loadT();delete T[n];saveT(T);render()}
+function statsL(l){var B={},W={};l.forEach(function(e){var b=B[e.b]||(B[e.b]={r:0,b:0,f4:0,f6:0,o:false});if(e.k)return;b.r+=e.br;if(e.x!=="wd")b.b++;if(e.br===4)b.f4++;if(e.br===6)b.f6++;if(e.w){var oo=e.out||e.b;(B[oo]||(B[oo]={r:0,b:0,f4:0,f6:0,o:false})).o=true}var w=W[e.bw]||(W[e.bw]={b:0,r:0,w:0});if(e.l)w.b++;w.r+=(e.x==="bye"||e.x==="lb")?0:e.t;if(e.w&&e.dt!=="Run out")w.w++});return{B:B,W:W}}
+function statsPg(){
+ var P={},g2=function(n){return P[n]||(P[n]={m:0,r:0,b:0,hs:0,no:0,inn:0,wk:0,bb:0,br:0})};
+ loadA().forEach(function(a){var part={};[0,1].forEach(function(i){var s=statsL(a.m.log[i]);Object.keys(s.B).forEach(function(n){var b=s.B[n],p=g2(n);if(b.b||b.o){part[n]=1;p.inn++;if(!b.o)p.no++;p.r+=b.r;p.b+=b.b;if(b.r>p.hs)p.hs=b.r}});Object.keys(s.W).forEach(function(n){var w=s.W[n],p=g2(n);part[n]=1;p.wk+=w.w;p.bb+=w.b;p.br+=w.r})});Object.keys(part).forEach(function(n){g2(n).m++})});
+ var ks=Object.keys(P);if(!ks.length)return '<div class="card"><p class="hint">Player stats appear once a match is saved to History.</p></div>';
+ var th=function(a){return '<tr class="hint">'+a.map(function(x,j){return '<td'+(j?' class="r"':'')+'>'+x+'</td>'}).join("")+'</tr>'};
+ var bt=ks.filter(function(n){return P[n].inn}).sort(function(a,b){return P[b].r-P[a].r}),bw=ks.filter(function(n){return P[n].bb}).sort(function(a,b){return P[b].wk-P[a].wk});
+ return '<div class="card"><div class="team">Batting</div><table>'+th(["Player","M","Runs","HS","Avg","SR"])+bt.map(function(n){var p=P[n],o=p.inn-p.no;return '<tr><td>'+esc(n)+'</td><td class="r">'+p.m+'</td><td class="r"><b>'+p.r+'</b></td><td class="r">'+p.hs+'</td><td class="r">'+(o?(p.r/o).toFixed(1):"-")+'</td><td class="r">'+(p.b?(p.r/p.b*100).toFixed(0):"-")+'</td></tr>'}).join("")+'</table></div><div class="card"><div class="team">Bowling</div><table>'+th(["Player","Ov","Runs","Wkts","Econ"])+bw.map(function(n){var p=P[n];return '<tr><td>'+esc(n)+'</td><td class="r">'+ovr(p.bb)+'</td><td class="r">'+p.br+'</td><td class="r"><b>'+p.wk+'</b></td><td class="r">'+(p.bb?(p.br/(p.bb/6)).toFixed(1):"-")+'</td></tr>'}).join("")+'</table></div>';
+}
+function chart(i){var ov=[],wk=[],n=0;S.log[i].forEach(function(e){var k=Math.floor(n/6);ov[k]=(ov[k]||0)+e.t;if(e.w)wk[k]=1;if(e.l)n++});if(!ov.length)return"";for(var j=0;j<ov.length;j++)ov[j]=ov[j]||0;var m=Math.max.apply(null,ov.concat([6])),w=Math.min(36,Math.floor(300/ov.length)),s='<svg viewBox="0 0 '+Math.max(ov.length*(w+4),300)+' 130" width="100%" role="img" aria-label="Runs per over">';ov.forEach(function(r,j){var hh=Math.round(r/m*90),x=j*(w+4);s+='<rect x="'+x+'" y="'+(100-hh)+'" width="'+w+'" height="'+hh+'" rx="3" fill="'+(wk[j]?"var(--red)":"var(--green)")+'"/><text x="'+(x+w/2)+'" y="'+(96-hh)+'" font-size="11" text-anchor="middle" fill="var(--ink)">'+r+'</text><text x="'+(x+w/2)+'" y="118" font-size="11" text-anchor="middle" fill="var(--mute)">'+(j+1)+'</text>'});return '<div class="card"><div class="team">Runs per over · '+esc(team(i))+' (red = wicket over)</div>'+s+'</svg></div>'}
+function extras(i){var m={wd:0,nb:0,bye:0,lb:0};S.log[i].forEach(function(e){if(e.x==="wd")m.wd+=e.t;else if(e.x==="nb")m.nb++;else if(e.x==="bye"||e.x==="lb")m[e.x]+=e.t});return "Extras "+(m.wd+m.nb+m.bye+m.lb)+" (wd "+m.wd+", nb "+m.nb+", b "+m.bye+", lb "+m.lb+")"}
+function bk(){return '<div class="card"><p>Copy all matches, teams and the current match as text to move to another phone, or restore from a copy.</p><div class="row"><button onclick="exportAll()">Export backup</button><button onclick="importAll()">Restore backup</button></div></div>'}
+function exportAll(){var t=JSON.stringify({s:S,a:loadA(),t:loadT()});if(navigator.share){navigator.share({text:t}).catch(function(){})}else if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){alert("Backup copied")},function(){prompt("Copy backup",t)})}else prompt("Copy backup",t)}
+function importAll(){var t=prompt("Paste your backup");if(!t)return;try{var d=JSON.parse(t);if(!d.s||!d.a)throw 0;if(!confirm("Replace current data with this backup?"))return;S=d.s;saveA(d.a);saveT(d.t||{});save();V="match";render()}catch(e){alert("That backup could not be read.")}}
+function reset(){if(confirm("Start a new match? The current match is saved to History.")){if(!S.arch&&(S.log[0].length||S.log[1].length))addArchive(1);S.setup=true;S.arch=0;S.log=[[],[]];S.cur=[{},{}];S.inn=0;save();render()}}
+function nextInn(){S.inn=1;save();render()}
+function result(){
+ var c0=calc(0),c1=calc(1);
+ if(c1.r>c0.r){var k=maxW(1)-c1.w;return team(1)+" won by "+k+" wicket"+(k===1?"":"s")}
+ if(c1.r===c0.r)return "Match tied";
+ var d=c0.r-c1.r;return team(0)+" won by "+d+" run"+(d===1?"":"s");
+}
+function opts(a){return a.map(function(n){return '<option>'+esc(n)+'</option>'}).join("")}
+function picker(i){
+ var c=S.cur[i],bat=S.sq[i],bowl=S.sq[1-i],out=outList(i),h='<div class="card"><div class="team">Choose players</div>';
+ var first=!S.log[i].length,L=S.log[i][S.log[i].length-1],lr=L&&L.k?L.b:null;
+ if(!c.st)h+='<label for="p_st">'+(first?"Striker":"New batter")+'</label><select id="p_st">'+opts(bat.filter(function(n){return out.indexOf(n)<0&&n!==c.ns&&n!==lr}))+'</select>';
+ if(!c.ns)h+='<label for="p_ns">'+(first?"Non-striker":"New batter")+'</label><select id="p_ns">'+opts(bat.filter(function(n){return out.indexOf(n)<0&&n!==c.st&&n!==lr}))+'</select>';
+ if(!c.bw){var pb=prevBowler(i);h+='<label for="p_bw">Bowler</label><select id="p_bw">'+opts(bowl.filter(function(n){return n!==pb}))+'</select>'}
+ return h+'<div class="row"><button class="go" onclick="confirmPick()">Confirm</button></div></div>';
+}
+function card(i,c){
+ var st=stats(i),h='<details class="card"><summary>Scorecard · '+esc(team(i))+'</summary><table style="margin-top:8px">';
+ var seen={};
+ S.sq[i].forEach(function(n){var b=st.B[n];if(b||n===S.cur[i].st||n===S.cur[i].ns){seen[n]=1;b=b||{r:0,b:0,f4:0,f6:0,o:false};
+  h+='<tr><td class="'+(b.o?"out":"")+'">'+esc(n)+'<div class="hint" style="margin:0">'+(b.o?esc(b.how||"out"):b.ret?"retired":"not out")+'</div></td><td class="r"><b>'+b.r+'</b> ('+b.b+') · '+b.f4+'x4 '+b.f6+'x6</td></tr>'}});
+ h+='</table><p class="hint">'+extras(i)+'</p><table style="margin-top:10px">';
+ Object.keys(st.W).forEach(function(n){var w=st.W[n];h+='<tr><td>'+esc(n)+'</td><td class="r">'+ovr(w.b)+' ov · '+w.r+' runs · <b>'+w.w+'</b> wkt</td></tr>'});
+ var fw=fow(i);return h+'</table>'+overHtml(i)+(fw?'<p class="hint">Fall of wickets: '+esc(fw)+'</p>':'')+'<div class="row"><button onclick="share()">Share scorecard</button></div></details>';
+}
+function renderMatch(){
+ var el=document.getElementById("app");
+ if(S.setup){
+  el.innerHTML='<h1 style="font-size:40px;margin:8px 0 14px">New match</h1><div class="card">'+
+  '<label for="a">Team 1</label><input id="a" list="tl" oninput="fillTeam(this,\'sa\')" value="'+esc(S.a)+'" placeholder="Team A" autocomplete="off">'+
+  '<label for="sa">'+esc(S.a||"Team A")+' squad</label><textarea id="sa" placeholder="One name per line or comma separated">'+esc(S.raw[0])+'</textarea>'+
+  '<label for="b">Team 2</label><input id="b" list="tl" oninput="fillTeam(this,\'sb\')" value="'+esc(S.b)+'" placeholder="Team B" autocomplete="off">'+
+  '<label for="sb">'+esc(S.b||"Team B")+' squad</label><textarea id="sb" placeholder="One name per line or comma separated">'+esc(S.raw[1])+'</textarea>'+
+  '<datalist id="tl">'+Object.keys(loadT()).map(function(n){return '<option value="'+esc(n)+'">'}).join("")+'</datalist><label for="ts">Toss won by</label><select id="ts"><option value="a">Team 1</option><option value="b">Team 2</option></select><label for="te">Elected to</label><select id="te"><option value="bat">Bat</option><option value="bowl">Bowl</option></select><div class="row">'+[["T10",10],["T20",20],["ODI",50]].map(function(p){return '<button type="button" onclick="document.getElementById(\'ov\').value='+p[1]+'">'+p[0]+'</button>'}).join("")+'</div><label for="ov">Overs per side</label><input id="ov" type="number" inputmode="numeric" min="1" max="50" value="'+S.ov+'">'+
+  '<p class="hint">Leave a squad empty to use numbered players. Scores save on this device.</p></div>'+
+  '<div class="row"><button class="go" onclick="start()">Start scoring</button></div>';
+  return;
+ }
+ var i=S.inn,c=calc(i),cur=S.cur[i],done=ended(i),c0=calc(0),h="";
+ var crr=c.b?(c.r/(c.b/6)).toFixed(2):"0.00";
+ h+='<div class="card"><div class="team">'+esc(team(i))+' batting · innings '+(i+1)+'</div>'+
+ '<div class="num score">'+c.r+'<small>/'+c.w+'</small></div>'+
+ '<div class="meta"><span>Overs <b>'+ovr(c.b)+'</b> / '+S.ov+'</span><span>Run rate <b>'+crr+'</b></span></div>';
+ if(i===1&&!done){var need=c0.r+1-c.r,left=S.ov*6-c.b;
+  h+='<div class="msg">'+esc(team(1))+' need '+need+' from '+left+' ball'+(left===1?"":"s")+(left?' · RRR '+(need/(left/6)).toFixed(2):'')+'</div>'}
+ if(done)h+='<div class="msg">'+(i===0?'Innings over. '+esc(team(1))+' need '+(c.r+1)+' to win.':result())+'</div>';
+ h+='</div>';
+ var st=stats(i);
+ if(!done&&(cur.st||cur.ns||cur.bw)){
+  var row=function(n,k){if(!n)return"";var b=st.B[n]||{r:0,b:0};return '<tr><td class="'+(k?"str":"")+'"><span data-n="'+esc(n)+'" onclick="rename(this.dataset.n)">'+esc(n)+'</span>'+(k?" *":"")+'</td><td class="r"><b>'+b.r+'</b> ('+b.b+')</td></tr>'};
+  var w=cur.bw?(st.W[cur.bw]||{b:0,r:0,w:0}):null;
+  h+='<div class="card"><table class="pl">'+row(cur.st,1)+row(cur.ns,0)+(w?'<tr><td><span data-n="'+esc(cur.bw)+'" onclick="rename(this.dataset.n)">'+esc(cur.bw)+'</span> <span class="team" style="text-decoration:none;cursor:default">bowling</span></td><td class="r"><b>'+w.w+'-'+w.r+'</b> ('+ovr(w.b)+')</td></tr>':'')+'</table><div class="meta">Partnership <b>'+partner(i)+'</b></div></div>';
+ }
+ var o=curOver(i);
+ h+='<div class="card"><div class="team" style="margin-bottom:8px">This over</div><div class="over">'+(o.length?o.map(chipOf).join(""):'<span class="hint">No balls yet</span>')+'</div></div>';
+ if(!done){
+  if(!cur.st||!cur.ns||!cur.bw)h+=picker(i);
+  else h+='<div class="mods">'+
+  [["wd","Wd"],["nb","Nb"],["bye","Bye"],["lb","LB"]].map(function(m){return '<button class="'+(mod.x===m[0]?"on":"")+'" onclick="setMod(\''+m[0]+'\')">'+m[1]+'</button>'}).join("")+
+  '<button class="wk '+(mod.w?"on":"")+'" onclick="setMod(\'w\')">Out</button></div>'+(mod.w?'<div class="row" style="margin:0 0 10px"><select id="dt" aria-label="How out">'+["Bowled","Caught","LBW","Run out","Stumped","Hit wicket","Other"].map(function(d){return '<option>'+d+'</option>'}).join("")+'</select><select id="dw" aria-label="Who is out"><option value="st">'+esc(cur.st)+'</option><option value="ns">'+esc(cur.ns)+'</option></select></div>':'')+
+  '<div class="pad">'+[0,1,2,3,4,6].map(function(n){return '<button class="'+(n>=4?"b"+n:"")+'" onclick="add('+n+')">'+(n===0?"Dot":n)+'</button>'}).join("")+'</div>'+
+  '<p class="hint">'+(mod.x||mod.w?'Now tap the runs'+(mod.w?' · choose how out above':''):'Pick Wd, Nb, Bye, LB or Out first. Tap a player name to rename.')+'</p>';
+ }else if(i===0)h+='<div class="row"><button class="go" onclick="nextInn()">Start second innings</button></div>';
+ h+=(!done&&cur.st&&cur.ns&&cur.bw?'<div class="row"><button onclick="swapEnds()">Swap batters</button><button onclick="retire()">Retire striker</button></div>':'')+'<div class="row"><button onclick="undo()">Undo last ball</button><button onclick="reset()">New match</button></div><div style="height:12px"></div>';
+ if(c.b||done)h+=card(i)+chart(i);
+ if(i===1&&calc(0).b)h+=card(0)+chart(0);
+ el.innerHTML=h;
+}
+AME?render():auLogin();
+</script>
+<script>
+/* Forced update: when a newer index.html (higher app-version) is on the server, block the app until the user taps Update */
+(function(){var URL0="https://mry-lab.github.io/Cricket_Scorer/",cur=+document.querySelector('meta[name=app-version]').content,blocked=0;
+function show(v){if(blocked)return;blocked=1;var d=document.createElement("div");d.style.cssText="position:fixed;inset:0;z-index:99999;background:#0b1220;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:14px";
+d.innerHTML='<div style="font-size:52px">⬇️</div><div style="font-size:24px;font-weight:800">Update available</div><div style="opacity:.8;max-width:320px">A new version of Cricket Scorer is ready. Please update to continue.</div><button id="updb" style="margin-top:8px;padding:14px 34px;border:0;border-radius:12px;background:#22c55e;color:#04210f;font-size:18px;font-weight:800">Update now</button>';
+document.body.appendChild(d);
+document.getElementById("updb").onclick=function(){this.textContent="Updating…";var go=function(){location.replace(URL0+"?v="+v+"&t="+Date.now())};if(window.caches&&caches.keys)caches.keys().then(function(k){return Promise.all(k.map(function(x){return caches.delete(x)}))}).then(go,go);else go()}}
+function chk(){if(blocked)return;fetch(URL0+"?_="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){var m=t.match(/name="app-version" content="(\d+)"/);if(m&&+m[1]!==cur)show(+m[1])}).catch(function(){})}
+chk();setInterval(chk,60000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();
+</script>
+</body>
+</html>
